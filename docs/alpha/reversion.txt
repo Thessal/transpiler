@@ -1,0 +1,10 @@
+* Code:
+logret : Signal<Float> = log(signal=data(id="returns"))
+short_term_return : Signal<Float> = ts_mean(lookback = 5)
+result : Signal<Float> = multiply(signal=short_term_return, -1.0)
+
+* Explanation
+Reversion is a concept that the stock price is like to have fluctuate within a week. (5-working day is a one-week horizon.)
+This idea can be applied when there is no significant information arrival that changes true price, or fundamentals of a stock.
+Investor overreaction is a possible explanation of the fluctuation with 5-day reversion pattern.
+Reversion idea works well when the overshoot is endogenous: For example, investor bias, or relationship between stocks.

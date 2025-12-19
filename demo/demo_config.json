@@ -1,0 +1,10 @@
+{
+    "ollama": {
+        "host": "http://cuda.c-jk.com:11434",
+        "model": "bge-m3:latest"
+    },
+    "chroma": {
+        "persist_directory": "./demo_db",
+        "collection_name": "demo_analysis"
+    }
+}

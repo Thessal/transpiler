@@ -1,0 +1,12 @@
+* Code:
+logret : Signal<Float> = log(signal=data(id="returns"))
+long_term_return : Signal<Float> = ts_mean(lookback = 200)
+result : Signal<Float> = multiply(signal=short_term_return, 1.0)
+
+* Explanation
+Trends can persist.
+One possible explanation is long-term investors' underreaction to the new information.
+If the stock price is driven by long-term investors, the price discovery can be slow and look like a trend that persists. 
+To enhance this idea, sector-wise analysis can be applied.
+Other explanation is the limited speed of information diffusion.
+To ehhance this idea, one can try to detect front-running signal.

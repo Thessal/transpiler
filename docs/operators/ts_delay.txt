@@ -1,0 +1,10 @@
+* Signature
+ts_delay: Signal<Float> (signal: Signal<Float>, lookback: Int)
+
+* Arguments
+signal: original tabular data
+lookback: the amount of periods to shift
+
+* Descriptions
+The signal is delayed for the given amount of periods.
+Delayed signal is often used as a baseline signal.

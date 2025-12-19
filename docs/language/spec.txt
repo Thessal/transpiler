@@ -1,0 +1,32 @@
+* Paradigm: Declarative, strongly typed, functional (no side effects, immutable definitions).
+* Identifiers must start with a letter or underscore, followed by alphanumerics.
+* Keywords: 
+ - Assignment: =
+ - Type Annotation: :
+ - Generics: <>
+ - Function arguments group: ()
+ - Function arguments separators: ,
+ - Function definition block: {}
+* Types:
+ - Basic types: Float, Int, Bool, String
+ - Generic types:
+  - Signal<T>: Represents a time-series or data stream where T is the underlying atomic type.
+               Example: Signal<Float>, Signal<Int>
+* Statements:
+ - Variable declaration: name : Type = Expression
+ - Function declaration: function_name: output_type(arg1: input_type_1, arg2: input_type_2, ...) = { BodyExpression }
+  - BodyExpression is a block of assignments separated by newline
+  - Assignment to variable named "result" is used as a function return value.
+* Expressions:
+ - Examples of literals: 10., "data", True
+ - Function calls are always keyworded: func(key=val, period=10)
+* Intrinsic Operators:
+ Signatures and Descriptions are listed below.
+ - data	(id: String) -> Signal<Float>	Source node. Loads raw market data by ID.
+ - ts_mean	(signal: Either(Signal<Float>|Signal<Int>), period: Int) -> Signal<Float>	Calculates time-series rolling mean.
+ - divide	(dividend: Either(Signal<Float>|Float), divisor: Either(Signal<Float>|Float)) -> Signal<Float>	Element-wise division.
+ - multiply	(Signal<Float>, Signal<Float>) -> Signal<Float>	Element-wise multiplication.
+ - to_int	(signal: Signal<Float>, round: Bool) -> Signal<Int>	Casts/rounds a float signal to an integer signal.
+* Scoping
+ - Immutable Bindings: Once a variable x is defined, it cannot be redefined in the same scope.
+ - Functions have access to new local scope containing the call arguments.
