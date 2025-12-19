@@ -1,0 +1,87 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Any, Callable, Dict, List, Optional, Tuple, Sequence
+import re
+import numpy as np
+
+
+# =========================
+# Types
+# =========================
+class Type: ...
+
+
+@dataclass(frozen=True)
+class ScalarType(Type):
+    name: str  # "Real" | "Int" | "Bool"
+
+
+REAL = ScalarType("Real")
+INT  = ScalarType("Int")
+BOOL = ScalarType("Bool")
+
+
+@dataclass(frozen=True)
+class SignalType(Type):
+    scalar: ScalarType = REAL
+
+
+@dataclass(frozen=True)
+class IntParamType(Type): ...
+
+
+@dataclass(frozen=True)
+class FloatParamType(Type): ...
+
+
+@dataclass(frozen=True)
+class TupleType(Type):
+    items: Tuple[Type, ...]
+
+
+@dataclass(frozen=True)
+class OpType(Type):
+    in_type: Type
+    out_type: Type
+
+
+def type_eq(a: Type, b: Type) -> bool:
+    return a == b
+
+
+def is_signal(t: Type) -> bool:
+    return isinstance(t, SignalType)
+
+
+def is_intparam(t: Type) -> bool:
+    return isinstance(t, IntParamType)
+
+
+def is_floatparam(t: Type) -> bool:
+    return isinstance(t, FloatParamType)
+
+
+def is_param(t: Type) -> bool:
+    return is_intparam(t) or is_floatparam(t)
+
+
+def tuple_items(t: Type) -> Tuple[Type, ...]:
+    # Treat unary input as length-1 list; TupleType as its items.
+    if isinstance(t, TupleType):
+        return t.items
+    return (t,)
+
+
+def mk_remaining_input(prefix_types: Sequence[Type], full_types: Sequence[Type]) -> Type:
+    rem = list(full_types[len(prefix_types):])
+    if len(rem) == 1:
+        return rem[0]
+    return TupleType(tuple(rem))
+
+
+def promote_param(a: Type, b: Type) -> Type:
+    if is_floatparam(a) or is_floatparam(b):
+        return FloatParamType()
+    return IntParamType()
+

@@ -1,0 +1,39 @@
+Write a lexer, type checker and parser that can convert the following input into a directed graph of python classes.
+
+* Input string ("Signal<Float>" can be omitted, but it was not omitted in this case) : 
+
+close : Signal<Float> = data("price")
+adv20 : Signal<Float> = ts_mean(signal=data("volume"), period=20)
+volume_level : Signal<Float> = divide(dividend=data("volume"), divisor=data("adv20"))
+dynamic_ma(signal,lookback) = {signal=close, lookback=int(signal=multiply(lookback, volume_level), round=True)}
+lookback : Float = 10.
+result : Signal<Float>, lookback : Signal<Float> = dynamic_ma(signal=data("close"), lookback=lookback)
+
+* Type checking (pattern on the left matches parsed instance on the right) : 
+
+Signal<Float> = Signal<Float>
+
+Signal<Float> = Operator<{"signal":Either(Signal<Float>|Signal<int>), "period":float}, Signal<Float>>
+Signal<Float> = Signal<Float>
+Either(Signal<Float>|Int) = int
+
+Signal<Float> = Operator<{"dividend":Either(Signal<Float>|Float), "divisor"=Either(Signal<Float>|float)},Signal<Float>>
+Signal<Float> = Signal<Float>
+Signal<Int> = Operator<{"signal":Signal<Float>, "round":Bool}, Signal<Int>>
+Signal<Float> = Operator<Tuple(Signal<Float>, Signal<Float>), Signal<Int>>
+
+OperatorDef<Dict(signal=Signal<Float>, lookback=Signal<Float>)>
+Signal<Float> = Operator<{"signal":Either(Signal<Float>|Signal<Int>), "period":Float}, 
+Either(Signal<float>|Signal<Int>), Signal<Float>>
+Signal<Int> = Operator<Signal<Float>,Signal<Int>>
+Signal<Float> = Operator<Tuple(Signal<Float>, Signal<Float>),Signal<Float>>
+
+Float = float 
+
+Tuple(Signal<Float>,Signal<Float>) = Operator<Dict(signal=Signal<Float>, lookback=Either(Signal<Float>,Float)), Tuple(Signal<Float>,Signal<Float>) >
+Signal<float> = Signal<float>
+Either(Signal<Float>, Float) = Float
+
+* Output structure:
+
+result = ts_mean(data("price"), int(multiply(Float(10.),divide(data("volume"),data("adv20")))))

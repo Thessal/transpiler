@@ -1,0 +1,131 @@
+This document describes a declarative, functional domain-specific language (DSL) for processing high-dimensional tabular data. It relies on symbolic expression trees, named tuple injection, and saturation-based reduction.
+ButterFlow Language Specification (v3.0)
+
+1.0 Type System
+
+The language utilizes a strong, static typing system designed to separate data signals from configuration parameters.
+
+1.1 Primitive Types
+    Signal (S): A two-dimensional array of data indexed by T (Time) and N (Entity/Asset). Operations on Signals are implicitly broadcast across T and N.
+    Integer (Z): A discrete scalar value used for indexing, window sizes, or lag periods.
+    Float (R): A continuous scalar value used for thresholds, smoothing factors, or constants.
+    String (C): A literal text value, primarily used for file paths, identifiers, or column names.
+
+1.2 Composite Types
+    Operator (Ω): A functional unit that transforms inputs into outputs. An operator is defined by its Signature (required inputs) and its Kernel (implementation).
+    Tuple (T): A named collection of values (Key-Value pairs). Inputs to operators are always treated as Named Tuples.
+    Pattern (Ψ): A symbolic representation of a tree structure used for matching and rewriting rules.
+
+2.0 Operator Semantics
+The core execution mechanic is Saturation-Based Currying. Operators are not just functions; they are state containers that accumulate arguments until they are "full" (saturated).
+
+2.1 The Signature
+Every Operator type defines a Signature: a set of required argument names and their expected types.
+    Example SMA Signature: { input: Signal, window: Integer }
+
+2.2 Binding State
+An instance of an Operator maintains a Binding State: a dictionary of arguments provided so far.
+    Initial State: {} (Empty)
+    State after SMA(window=20): { window: 20 }
+
+2.3 Partial Application (Currying)
+If an Operator is supplied with arguments that match a subset of its Signature, it does not execute. Instead, it returns a New Operator instance with the updated Binding State. This allows for configuration-first programming.
+
+2.4 Saturation & Reduction
+An Operator is Saturated when its Binding State contains valid values for every key in its Signature.
+    Rule: If Count(Bindings) == Count(Signature), the Operator immediately Reduces.
+    Reduction: The system invokes the Operator's Kernel (the low-level computation), passing the Binding State as arguments. The Operator node in the graph is replaced by the Kernel's return value (usually a Signal).
+
+
+3.0 Syntax & Expression Structure
+A script is a sequence of variable assignments. The order of assignment defines a Directed Acyclic Graph (DAG).
+
+3.1 Assignment
+Format: Let <Identifier> : <Type> = <Expression>
+    <Identifier>: A unique name for the variable.
+    <Type>: The expected result type (optional if type inference is implemented).
+    <Expression>: A literal, another variable, or an Operator application.
+
+3.2 Operator Application
+Format: <OperatorName>(<Key>=<Value>, ...)
+    Arguments are passed as named parameters.
+    Order of arguments does not matter.
+    Missing arguments result in a Partial Operator (see 2.3).
+
+3.3 Example Syntax
+// 1. Partial Application (Configuring logic)
+// Creates an operator 'smooth' that expects an 'input'
+Let smooth : Operator = SMA(window=20)
+// 2. Data Loading
+Let raw_data : Signal = LOAD(source="prices.csv")
+// 3. Saturation (Execution)
+// 'smooth' already has 'window'. Adding 'input' saturates it.
+Let trend : Signal = smooth(input=raw_data)
+
+
+4.0 Pattern Matching System
+Patterns are used for optimization (rewriting inefficient trees) and validation (checking for logical errors).
+
+4.1 Pattern Structure
+A Pattern is a symbolic tree that mimics the structure of an Operator Expression but contains Wildcards.
+    Wildcard ?x: Matches any node and binds it to the name x.
+    Typed Wildcard ?x:Type: Matches any node of a specific Type.
+    Constraint Wildcard ?x{val=5}: Matches a node with specific internal bindings (e.g., an Operator where window is already set to 5).
+
+4.2 Matching Logic (Set-Theoretic)
+Matching against an Operator is done via Subset Inclusion on the bindings.
+    Pattern P matches Operator O if:
+        O.Name == P.Name
+        For every key k in P.Bindings, O.Bindings[k] exists and matches P.Bindings[k].
+
+4.3 Reduction Rules
+A Reduction Rule consists of a Target Pattern and a Replacement Expression.
+    Rule: SUB(a=?x, b=?x) → LITERAL(0) Interpretation: If an operator is SUB and arguments 'a' and 'b' are the same variable, replace the node with 0.
+
+5.0 Interpreter Implementation Requirements
+To implement ButterFlow, the interpreter must perform the following passes:
+
+5.1 Parsing Phase
+    Tokenization: Convert text to tokens.
+    DAG Construction: Build the dependency graph. Every "Let" statement is a node. Dependencies are edges.
+    Cycle Detection: Perform a Topological Sort to ensure no circular dependencies exist (e.g., A depends on B, B depends on A).
+
+5.2 Optimization Phase (Pre-Computation)
+    Pattern Traversal: Walk the DAG.
+    Match & Rewrite: Check every node against the library of Optimization Patterns. If a match occurs, swap the subgraph with the optimized version.
+
+5.3 Execution Phase (The Reduction Loop)
+    Leaf Identification: Identify nodes that rely only on literals or external data sources (Leaves).
+    Propagation: Pass the data from Leaves to their Parent Operators.
+    Saturation Check:
+        Update the Parent's Binding State.
+        If Parent is Saturated → Execute Kernel → Store Result.
+        If Parent is Partial → Wait for other inputs.
+    Completion: Continue until the requested Output variable is computed.
+
+6.0 Standard Library (Core Operators)
+The following operators are the required minimum implementation for the language to be functional.
+
+6.1 I/O Operators
+    LOAD: { source: String } → Signal
+
+6.2 Arithmetic Operators
+    ADD: { a: Signal|Float, b: Signal|Float } → Signal
+    SUB: { a: Signal|Float, b: Signal|Float } → Signal
+    MUL: { a: Signal|Float, b: Signal|Float } → Signal
+    DIV: { a: Signal|Float, b: Signal|Float } → Signal
+
+6.3 Time-Series Operators
+    LAG: { input: Signal, period: Integer } → Signal
+        Shifts data forward in time.
+    SMA: { input: Signal, window: Integer } → Signal
+        Simple Moving Average.
+    STD: { input: Signal, window: Integer } → Signal
+        Rolling Standard Deviation.
+
+6.4 Cross-Sectional Operators
+    RANK: { input: Signal } → Signal
+        Ranks entities at each timestamp (e.g., 1 to N).
+
+    ZSCORE: { input: Signal } → Signal
+        Normalizes across the cross-section at each timestamp.
