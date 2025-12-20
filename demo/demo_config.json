@@ -1,10 +1,28 @@
-{
-    "ollama": {
-        "host": "http://cuda.c-jk.com:11434",
-        "model": "bge-m3:latest"
+{ 
+    "directories": {
+        "input": "../docs",
+        "output": "./outputs"
     },
-    "chroma": {
-        "persist_directory": "./demo_db",
-        "collection_name": "demo_analysis"
+    "indexer": {
+        "ollama": {
+            "host": "http://cuda.c-jk.com:11434",
+            "model": "bge-m3:latest"
+        },
+        "chroma": {
+            "persist_directory": "./demo_db",
+            "collection_name": "demo_analysis"
+        }
+    },
+    "generator": {
+        "_provider": "ollama", 
+        "provider": "gemini", 
+        "ollama": {
+            "host": "http://rocm.c-jk.com:11434",
+            "model": "gpt-oss:120b"
+        },
+        "gemini": {
+            "api_key_env": "GEMINI_API_TOKEN",
+            "model": "gemini-flash-latest"
+        }
     }
 }

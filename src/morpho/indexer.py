@@ -8,7 +8,7 @@ class DocumentIndexer:
     def __init__(self, config_path="config.json"):
         # Load external configuration
         with open(config_path, 'r') as f:
-            self.config = json.load(f)
+            self.config = json.load(f)["indexer"]
         
         # Initialize Ollama Client
         self.ollama_client = ollama.Client(host=self.config['ollama']['host'])

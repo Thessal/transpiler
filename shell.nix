@@ -65,5 +65,9 @@ in pkgs.mkShell {
     morphoPackage
     pkgs.uv
     ]; 
+  shellHook =
+  ''
+    export GEMINI_API_TOKEN="$(cat /etc/nixos/key/gemini.txt)"
+  '';
 }
 
