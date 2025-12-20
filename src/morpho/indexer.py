@@ -4,25 +4,26 @@ import ollama
 import chromadb
 from chromadb.config import Settings
 
+
 class DocumentIndexer:
     def __init__(self, config_path="config.json"):
         # Load external configuration
         with open(config_path, 'r') as f:
             self.config = json.load(f)["indexer"]
-        
+
         # Initialize Ollama Client
         self.ollama_client = ollama.Client(host=self.config['ollama']['host'])
         self.model = self.config['ollama']['model']
-        
+
         # Initialize ChromaDB (Persistent Storage)
         self.chroma_client = chromadb.PersistentClient(
             path=self.config['chroma']['persist_directory']
         )
-        
+
         # Create or load a collection
         self.collection = self.chroma_client.get_or_create_collection(
             name=self.config['chroma']['collection_name'],
-            metadata={"hnsw:space": "cosine"} # Optimization for BGE-M3
+            metadata={"hnsw:space": "cosine"}  # Optimization for BGE-M3
         )
 
     def process_directory(self, directory_path):
@@ -77,15 +78,17 @@ class DocumentIndexer:
         )
         return results
 
+
 if __name__ == "__main__":
     # Initialize the system
     indexer = DocumentIndexer("config.json")
-    
+
     # 1. Indexing phase
     indexer.process_directory("./data_folder")
-    
+
     # 2. Retrieval phase (Example search)
     print("\n--- Performing Semantic Search ---")
-    matches = indexer.semantic_search("interest rate volatility in emerging markets")
+    matches = indexer.semantic_search(
+        "interest rate volatility in emerging markets")
     for i, doc in enumerate(matches['documents'][0]):
         print(f"Match {i+1}: {matches['ids'][0][i]}")

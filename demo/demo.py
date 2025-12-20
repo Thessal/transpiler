@@ -1,6 +1,8 @@
+from morpho import StrategyWorkflow
 import sys
-sys.path.insert(0,'../src')
+sys.path.insert(0, '../src')
 
+# Indexing need to be intergrated into the workflow
 # import morpho
 
 # # Initialize the system
@@ -16,16 +18,13 @@ sys.path.insert(0,'../src')
 #     print(f"Match {i+1}: {matches['ids'][0][i]}")
 
 
-from morpho import StrategyWorkflow
-
 workflow = StrategyWorkflow("demo_config.json")
 
 inputs = {
-    "idea_file": "alpha/momentum.txt",
+    "idea_file": "../demo/demo_input.txt",
     "spec_file": "language/spec.txt",
-    "doc_files": ["alpha/reversion.txt"],  # List of filenames
-    "func_files": ["operators/ts_delay.txt", "operators/ts_mean.txt"]     # List of filenames
+    "doc_files": ["alpha/momentum.txt", "alpha/reversion.txt"],
+    "func_files": ["operators/ts_delay.txt", "operators/ts_mean.txt"]
 }
 
 workflow.run(**inputs)
-
