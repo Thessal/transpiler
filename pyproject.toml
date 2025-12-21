@@ -7,12 +7,17 @@ requires-python = ">=3.13"
 dependencies = [
     "butterflow",
     "chromadb>=1.3.5",
-    "google-genai>=1.38.0",
     "ollama>=0.6.0",
     "pydantic>=2.11.7",
 ]
 authors = [
 { name = "Jongkook Choi", email = "jongkook90@hotmail.com" },
+]
+
+[project.optional-dependencies]
+api = [
+    "google-genai>=1.38.0",
+    "openai>=2.7.2"
 ]
 
 [build-system]
@@ -24,3 +29,4 @@ packages = ["src/morpho"]
 
 [tool.uv.sources]
 butterflow = { git = "https://github.com/Thessal/butterflow" }
+

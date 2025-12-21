@@ -9,7 +9,7 @@ let
     inherit lib;
   };
   
-  project = pyproject-nix.lib.project.loadPyproject {
+  project = pyproject-nix.lib.project.loadUVPyproject {
     projectRoot = ./.;
   };
 
