@@ -68,6 +68,7 @@ in pkgs.mkShell {
   shellHook =
   ''
     export GEMINI_API_TOKEN="$(cat /etc/nixos/key/gemini.txt)"
+    export OPENAI_API_TOKEN="$(cat /etc/nixos/key/openai.txt)"
   '';
 }
 

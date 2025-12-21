@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from typing import List, Dict
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from .adapters import get_adapter
 from .util import load_json, read_file, compute_hash
 
@@ -9,12 +9,14 @@ from .util import load_json, read_file, compute_hash
 
 
 class StrategyImplementation(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     name: str = Field(..., description="Short name of the strategy variant.")
     description: str = Field(..., description="Logic and mathematical basis.")
     code: str = Field(..., description="Executable implementation code.")
 
 
 class StrategyResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
     strategies: List[StrategyImplementation] = Field(
         ..., description="List of generated implementations.")
 
@@ -60,7 +62,8 @@ class StrategyWorkflow:
             f"### STRATEGY IDEA ###\n{idea_text}\n\n"
             "Generate a JSON response containing a list of `strategies`.\n"
             "Provide **at least 10 distinct implementations**.\n"
-            "Vary parameters, execution logic, and edge case handling."
+            "Vary parameters, execution logic, and edge case handling.\n"
+            "When you write the code, refer the language spec and and the references."
         )
 
         # 3. Generate

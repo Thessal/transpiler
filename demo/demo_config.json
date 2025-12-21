@@ -15,14 +15,18 @@
     },
     "generator": {
         "_provider": "ollama", 
-        "provider": "gemini", 
+        "provider": "openai", 
         "ollama": {
             "host": "http://rocm.c-jk.com:11434",
             "model": "gpt-oss:120b"
         },
         "gemini": {
             "api_key_env": "GEMINI_API_TOKEN",
-            "model": "gemini-flash-latest"
+            "model": "gemini-pro-latest"
+        },
+        "openai": {
+            "api_key_env": "OPENAI_API_TOKEN",
+            "model": "gpt-4o"
         }
     }
 }

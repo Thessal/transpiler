@@ -1,6 +1,9 @@
 from morpho import StrategyWorkflow
 import sys
 sys.path.insert(0, '../src')
+import os 
+os.environ["OLLAMA_SCHED_SPREAD"] = "1"
+os.environ["HIP_VISIBLE_DEVICES"] = "0,1"
 
 # Indexing need to be intergrated into the workflow
 # import morpho

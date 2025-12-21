@@ -13,4 +13,5 @@ wheels/
 # Data files
 demo/demo_db
 demo/outputs
+demo/morpho
 .old
