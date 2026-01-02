@@ -1,0 +1,5 @@
+* ts_diff can be used to measure change
+* change can be interpreted as 
+ - noise that is likely to revert 
+ - trend which is the change of true price
+* trend is likely to persist

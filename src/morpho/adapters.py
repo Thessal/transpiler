@@ -3,18 +3,18 @@ import os
 import ollama
 import json
 import os
-from typing import Optional, Type, TypeVar
+from typing import List, Optional, Type, TypeVar
 from typing import Dict, Type, Any, Optional
 from pydantic import BaseModel
 
 
-class LLMAdapter(abc.ABC):
+class GeneratorAdapter(abc.ABC):
     @abc.abstractmethod
     def generate_strategies(self, system_context: str, user_prompt: str, schema: Type[BaseModel]) -> BaseModel:
         pass
 
 
-class OllamaAdapter(LLMAdapter):
+class OllamaAdapter(GeneratorAdapter):
     def __init__(self, host: str, model: str):
         self.client = ollama.Client(host=host)
         self.model = model
@@ -32,7 +32,7 @@ class OllamaAdapter(LLMAdapter):
         return schema.model_validate_json(response['message']['content'])
 
 
-class GeminiAdapter(LLMAdapter):
+class GeminiAdapter(GeneratorAdapter):
     def __init__(self, api_key_env: str, model: str):
         from google import genai
         from google.genai import types
@@ -65,7 +65,7 @@ class GeminiAdapter(LLMAdapter):
         return schema.model_validate_json(response.text)
 
 
-class OpenAIAdapter(LLMAdapter):
+class OpenAIAdapter(GeneratorAdapter):
     """
     - You can set `temperature` and `max_output_tokens`.
       :contentReference[oaicite:2]{index=2}
@@ -124,20 +124,50 @@ class OpenAIAdapter(LLMAdapter):
         return parsed
 
 
-def get_adapter(config: Dict) -> LLMAdapter:
-    provider = config.get("provider", "ollama").lower()
+class EmbedderAdaptor(abc.ABC):
+    @abc.abstractmethod
+    def embed_document(self, hash: str, metadata: Dict) -> List[float]:
+        pass
 
-    if provider == "ollama":
-        cfg = config.get("ollama", {})
-        return OllamaAdapter(host=cfg.get("host"), model=cfg.get("model"))
 
-    elif provider == "gemini":
-        cfg = config.get("gemini", {})
-        return GeminiAdapter(api_key_env=cfg.get("api_key_env"), model=cfg.get("model"))
+class OllamaEmbeddingAdapter(EmbedderAdaptor):
+    def __init__(self, host: str, model: str):
+        self.client = ollama.Client(host=host)
+        self.model = model
 
-    elif provider == "openai":
-        cfg = config.get("openai", {})
-        return OpenAIAdapter(api_key_env=cfg.get("api_key_env"), model=cfg.get("model"))
+    def embed_document(self, metadata: Dict) -> List[float]:
 
-    else:
-        raise ValueError(f"Unknown provider: {provider}")
+        # Generate embedding via Ollama
+        response = self.client.embed(
+            model=self.model,
+            input=metadata["serialized"]
+        )
+        embedding: List[float] = response['embeddings'][0]
+
+        return embedding
+
+
+def get_adapter(config: Dict, role: str) -> GeneratorAdapter | EmbedderAdaptor:
+    _config = config[role]
+    if role == "generator":
+        # defaults to ollama
+        provider = _config.get("provider", "ollama").lower()
+        if provider == "ollama":
+            cfg = _config.get("ollama", {})
+            return OllamaAdapter(host=cfg.get("host"), model=cfg.get("model"))
+
+        elif provider == "gemini":
+            cfg = _config.get("gemini", {})
+            return GeminiAdapter(api_key_env=cfg.get("api_key_env"), model=cfg.get("model"))
+
+        elif provider == "openai":
+            cfg = _config.get("openai", {})
+            return OpenAIAdapter(api_key_env=cfg.get("api_key_env"), model=cfg.get("model"))
+        else:
+            raise ValueError(f"Unknown provider: {provider} for role: {role}")
+    elif role == "embedder":
+        # defaults to ollama
+        provider = _config.get("provider", "ollama").lower()
+        if provider == "ollama":
+            cfg = _config.get("ollama", {})
+            return OllamaEmbeddingAdapter(host=cfg.get("host"), model=cfg.get("model"))

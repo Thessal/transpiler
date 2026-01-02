@@ -11,7 +11,5 @@ wheels/
 .vscode
 
 # Data files
-demo/demo_db
-demo/outputs
-demo/morpho
+demo_db
 .old

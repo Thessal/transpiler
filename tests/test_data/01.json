@@ -1,0 +1,8 @@
+{
+    "data_type":"document",
+    "last_validated":"2025-01-01",
+    "path":"./tests/test_data/documents/test.txt",
+    "data_source":"other",
+    "environment":"research",
+    "agent":"human#000000"
+}

@@ -1,21 +1,20 @@
-{ 
-    "directories": {
-        "input": "../docs",
-        "output": "./outputs"
-    },
-    "indexer": {
-        "ollama": {
-            "host": "http://cuda.c-jk.com:11434",
-            "model": "bge-m3:latest"
-        },
+{
+    "database":{
+        "provider": "chroma",
         "chroma": {
             "persist_directory": "./demo_db",
             "collection_name": "demo_analysis"
         }
     },
+    "embedder": {
+        "provider": "ollama", 
+        "ollama": {
+            "host": "http://cuda.c-jk.com:11434",
+            "model": "bge-m3:latest"
+        }
+    },
     "generator": {
-        "_provider": "ollama", 
-        "provider": "openai", 
+        "provider": "ollama", 
         "ollama": {
             "host": "http://rocm.c-jk.com:11434",
             "model": "gpt-oss:120b"

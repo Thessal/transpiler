@@ -3,14 +3,14 @@ from pathlib import Path
 import hashlib
 import json
 
-
 def load_json(path: str) -> Dict:
     with open(path, 'r', encoding='utf-8') as f:
         return json.load(f)
 
 
-def read_file(path: Path) -> str:
+def load_text(path: str) -> str:
     """Reads a file from the configured input directory."""
+    path = Path(path)
     if not path.exists():
         raise FileNotFoundError(f"Required input not found: {path}")
     return path.read_text(encoding='utf-8')

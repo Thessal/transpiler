@@ -1,0 +1,8 @@
+{
+    "data_type":"summary",
+    "last_validated":"2025-01-01",
+    "path":"./tests/test_data/summaries/test.txt",
+    "model":"manual",
+    "prompt":"",
+    "original_path":"./test_data/01.json"
+}
