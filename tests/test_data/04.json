@@ -3,6 +3,6 @@
     "last_validated":"2025-01-01",
     "path":"./tests/test_data/summaries/test.txt",
     "model":"manual",
-    "prompt":"",
+    "prompt_path":"./tests/test_data/prompts/prompt.txt",
     "original_path":"./test_data/01.json"
 }

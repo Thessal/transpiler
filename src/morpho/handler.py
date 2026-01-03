@@ -89,11 +89,12 @@ class CodeHandler(BaseHandler):
 class SummaryHandler(BaseHandler):
     def __init__(self):
         super().__init__()
-        self.required_fields |= {"path", "model", "prompt", "original_path"}
-        self.optional_fields |= set()
+        self.required_fields |= {"path", "model", "prompt"}
+        self.optional_fields |= {"original_path"}
         self.constraints |= {
             "data_type": ["summary"],
             "path": re.compile(r"^([\w\-\.\/\\\ ]+)\.(txt)$"),
+            "prompt_path": re.compile(r"^([\w\-\.\/\\\ ]+)\.(txt)$"),
             "original_path": re.compile(r"^([\w\-\.\/\\\ ]+)\.(json)$"),
         }
 

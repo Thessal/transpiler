@@ -12,7 +12,7 @@ def load_text(path: str) -> str:
     """Reads a file from the configured input directory."""
     path = Path(path)
     if not path.exists():
-        raise FileNotFoundError(f"Required input not found: {path}")
+        raise FileNotFoundError(f"Input file not found: {path}")
     return path.read_text(encoding='utf-8')
 
 
