@@ -16,21 +16,21 @@ class BaseHandler:
     def validate(self, metadata: Dict):
         for field in self.required_fields:
             if not (field in metadata):
-                raise ValueError(f"Missing field {field} in {metadata['path']}")
+                raise ValueError(f"Missing field {field} in (unknown json) for {metadata['path']}")
         for field, value in metadata.items():
             if not (
                 (field in self.required_fields) 
                 or (field in self.optional_fields)
                 ):
-                raise ValueError(f"Unknown field {field} in {metadata['path']}")
+                raise ValueError(f"Unknown field {field} in (unknown json) for in {metadata['path']}")
             if field in self.constraints:
                 target = self.constraints[field]
                 if isinstance(target, list):
                     if not (value in target):
-                        raise ValueError(f"Unknown option {field}={value} in {metadata['path']}")
+                        raise ValueError(f"Unknown option {field}={value} in (unknown json) for {metadata['path']}")
                 else:
                     if not bool(target.match(value)):
-                        raise ValueError(f"Unknown value {field}={value} in {metadata['path']}")
+                        raise ValueError(f"Unknown value {field}={value} in (unknown json) for {metadata['path']}")
 
     def serialize(self, metadata: Dict):
         self.validate(metadata)
@@ -89,7 +89,7 @@ class CodeHandler(BaseHandler):
 class SummaryHandler(BaseHandler):
     def __init__(self):
         super().__init__()
-        self.required_fields |= {"path", "model", "prompt"}
+        self.required_fields |= {"path", "model", "prompt_path"}
         self.optional_fields |= {"original_path"}
         self.constraints |= {
             "data_type": ["summary"],

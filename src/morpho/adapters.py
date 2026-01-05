@@ -20,16 +20,23 @@ class OllamaAdapter(GeneratorAdapter):
         self.model = model
 
     def generate_strategies(self, system_context: str, user_prompt: str, schema: Type[BaseModel]) -> BaseModel:
+        if len(system_context) > 0:
+            messages = [{'role': 'system', 'content': system_context}]
+        else:
+            messages = []
+        messages.append({'role': 'user', 'content': user_prompt})
+
         response = self.client.chat(
             model=self.model,
-            messages=[
-                {'role': 'system', 'content': system_context},
-                {'role': 'user', 'content': user_prompt},
-            ],
+            messages=messages,
             format=schema.model_json_schema(),
             options={'temperature': 0.7, 'num_ctx': 8192}
         )
-        return schema.model_validate_json(response['message']['content'])
+        try:
+            parsed_response = schema.model_validate_json(response['message']['content'])
+            return parsed_response
+        except Exception as e:
+            raise Exception(f"{repr(e)}\n{response}")
 
 
 class GeminiAdapter(GeneratorAdapter):

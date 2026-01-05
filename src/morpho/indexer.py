@@ -14,7 +14,10 @@ class LibraryIndexer:
         self.config = config
         self.embedder = get_adapter(config=config, role="embedder")
         self.db_client = get_client(config=config)
-    
+
+    def get_hash_list(self):
+        return list(self.libary.keys())
+
     def get_by_hash(self, hash:str):
         return self.library[hash]
 

@@ -42,24 +42,40 @@ class Transpiler:
         assert self.user_prompt_args.keys() == user_prompt_args.keys()
         system_context = self.system_context
         user_prompt = self.user_prompt
-        if system_context_args:
-            system_context = system_context.format(**system_context_args)
-        if user_prompt_args:
-            user_prompt = user_prompt.format(**user_prompt_args)
+        for k,v in system_context_args.items():
+            marker = "{{"+k+"}}"
+            assert marker in system_context
+            system_context = system_context.replace(marker,v)
+        for k,v in user_prompt_args.items():     
+            marker = "{{"+k+"}}"
+            assert marker in user_prompt   
+            user_prompt = user_prompt.replace(marker,v)
         return system_context, user_prompt
 
     def generate(self, system_context_args, user_prompt_args):
-        system_context, user_prompt = self.inject(
-            system_context_args, user_prompt_args)
+        try:
+            system_context, user_prompt = self.inject(
+                system_context_args, user_prompt_args)
+        except Exception as e:
+            raise Exception(f"""
+Failed to build prompt : {repr(e)}\n
+[system context]\n
+{self.system_context}
+[user prompt]\n
+{self.user_prompt}
+[args]\n
+{system_context_args}, {user_prompt_args}
+""")
 
         # Generate
-        print("[Exec] Querying AI Model...")
+        # print("[Exec] Querying AI Model...")
         response_obj = self.generator.generate_strategies(
             system_context, user_prompt, StrategyResponse)
 
+        return response_obj
         # Save Artifacts
-        print(
-            f"[Save] Processing {len(response_obj.strategies)} generated strategies...")
+        # print(
+        #     f"[Save] Processing {len(response_obj.strategies)} generated strategies...")
         # self._save_artifacts(response_obj.strategies, {
         #     "source_files": {
         #         "idea": idea_file,
