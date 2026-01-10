@@ -1,11 +1,12 @@
 import pandas as pd
 import signal
-from typing import Dict, List
+from typing import Any, Dict, List, Tuple
 from butterflow import lex, Parser, TypeChecker, Builder, Runtime
 import numpy as np
 from glob import glob
 import json
-from butterflow.parser import Expr, Call, VarRef, Literal
+# from butterflow.parser import Expr, Call, VarRef, Literal
+from butterflow.operators import Node
 import numpy as np
 
 
@@ -19,14 +20,16 @@ class Teacher:
     def test(self, input, scores=dict(), error_msg=[], prefix="", processor=lambda x: x, rules=[], fail_score=1., pass_score=5., na_score=None):
         try:
             if type(input) == type(None):
+                output = None
                 score = na_score
-            output = processor(input)
-            score = pass_score
-            for msg, s, rule in rules:
-                if rule(output):
-                    score = s
-                    error_msg.append(msg)
-                    break
+            else:
+                output = processor(input)
+                score = pass_score
+                for msg, s, rule in rules:
+                    if rule(output):
+                        score = s
+                        error_msg.append(msg)
+                        break
         except Exception as e:
             output = None
             score = fail_score
@@ -38,7 +41,7 @@ class Teacher:
 
 class SyntaxTeacher(Teacher):
 
-    def score(self, input_code: str) -> Dict:
+    def score(self, input_code: str) -> Tuple[Any, Dict, str]:
         scores = dict()
         error_msg = []
         tokens, scores, error_msg = self.lex(input_code, scores, error_msg)
@@ -83,9 +86,10 @@ class SyntaxTeacher(Teacher):
         builder = Builder()
         processor = builder.build
         rules = [
-            ("graph is not an expression", 1., lambda graph: not isinstance(graph, Expr)),
-            ("expression is literal", 2., lambda graph: isinstance(graph, Literal)),
-            ("result is referencing other variable", 4.9, lambda graph: isinstance(graph, VarRef)),
+            ("root node of computation graph is not a Node",
+             1., lambda graph: not isinstance(graph, Node)),
+            # ("expression is literal", 2., lambda graph: isinstance(graph, Literal)),
+            # ("result is referencing other variable", 4.9, lambda graph: isinstance(graph, VarRef)),
         ]
         graph, scores, error_msg = self.test(
             ast, scores=scores, error_msg=error_msg, prefix=prefix, processor=processor, rules=rules)
@@ -108,7 +112,7 @@ class SemanticTeacher(Teacher):
         self.runtime = Runtime(data=runtime_data)
         raise NotImplementedError
 
-    def score(self, graph:Expr ) -> Dict:
+    def score(self, graph: Node) -> Dict:
         scores = dict()
         # error_msg = []
         # tokens, scores, error_msg = self.lex(input_code, scores, error_msg)
@@ -116,7 +120,6 @@ class SemanticTeacher(Teacher):
         # ast, scores, error_msg = self.typechecking(ast, scores, error_msg)
         # graph, scores, error_msg = self.build(ast, scores, error_msg)
         # return graph, scores, "\n".join(error_msg)
-    
 
         # signal.alarm(10) # NOTE: causes truble when debugging
     # def calculate()
@@ -133,5 +136,3 @@ class SemanticTeacher(Teacher):
 #         "mdd": np.min(np.cumsum(returns)),
 #         "max_position": np.nanmax(np.abs(position))
     # def timeout
-
-
