@@ -6,7 +6,7 @@ from morpho.util import load_text
 class BaseHandler:
     def __init__(self):
         self.required_fields = {"data_type", "last_validated"}
-        self.optional_fields = {"serialized", "embedding"}
+        self.optional_fields = {"serialized", "embedding", "additional_info"}
         self.constraints: Dict[str, Union[List[str], re.Pattern]] = {
             "last_validated": re.compile(r"^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$"),
             # 0.0 to 1.0
@@ -32,7 +32,7 @@ class BaseHandler:
                     if not bool(target.match(value)):
                         raise ValueError(f"Unknown value {field}={value} in (unknown json) for {metadata['path']}")
 
-    def serialize(self, metadata: Dict):
+    def serialize(self, metadata: Dict) -> Dict:
         self.validate(metadata)
         return metadata
 

@@ -33,7 +33,8 @@ class OllamaAdapter(GeneratorAdapter):
             options={'temperature': 0.7, 'num_ctx': 8192}
         )
         try:
-            parsed_response = schema.model_validate_json(response['message']['content'])
+            parsed_response = schema.model_validate_json(
+                response['message']['content'])
             return parsed_response
         except Exception as e:
             raise Exception(f"{repr(e)}\n{response}")

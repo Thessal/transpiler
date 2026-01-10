@@ -1,0 +1,1 @@
+# generate metadata from code and stats, for reuse

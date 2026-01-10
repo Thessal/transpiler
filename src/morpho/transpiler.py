@@ -26,10 +26,8 @@ class Transpiler:
     def __init__(self, config: Dict, prompt_path: str):
         # Load template
         self.template_config = load_json(prompt_path)
-        self.system_context = "\n".join(self.template_config["system_context"])
-        self.system_context_args = self.template_config["system_context_args"]
-        self.user_prompt = "\n".join(self.template_config["user_prompt"])
-        self.user_prompt_args = self.template_config["user_prompt_args"]
+        self.system_context = self.template_config["system_context"]
+        self.user_prompt = self.template_config["user_prompt"]
 
         # Initialize Generator
         self.generator_config = config
@@ -37,35 +35,33 @@ class Transpiler:
         print(
             f"[Init] Transpiler initialized using {self.generator_config["generator"].get('provider')}")
 
-    def inject(self, system_context_args, user_prompt_args):
-        assert self.system_context_args.keys() == system_context_args.keys()
-        assert self.user_prompt_args.keys() == user_prompt_args.keys()
+    def _inject(self, system_context_args, user_prompt_args):
         system_context = self.system_context
         user_prompt = self.user_prompt
-        for k,v in system_context_args.items():
+        for k, v in system_context_args.items():
             marker = "{{"+k+"}}"
             assert marker in system_context
-            system_context = system_context.replace(marker,v)
-        for k,v in user_prompt_args.items():     
+            system_context = system_context.replace(marker, v)
+        for k, v in user_prompt_args.items():
             marker = "{{"+k+"}}"
-            assert marker in user_prompt   
-            user_prompt = user_prompt.replace(marker,v)
+            assert marker in user_prompt
+            user_prompt = user_prompt.replace(marker, v)
         return system_context, user_prompt
 
-    def generate(self, system_context_args, user_prompt_args):
+    def generate(self, system_context_args, user_prompt_args, syntax_score=False, sematic_score=False):
         try:
-            system_context, user_prompt = self.inject(
+            system_context, user_prompt = self._inject(
                 system_context_args, user_prompt_args)
         except Exception as e:
-            raise Exception(f"""
-Failed to build prompt : {repr(e)}\n
-[system context]\n
-{self.system_context}
-[user prompt]\n
-{self.user_prompt}
-[args]\n
-{system_context_args}, {user_prompt_args}
-""")
+            raise Exception("\n".join([
+                f"Failed to build prompt : {repr(e)}\n" +
+                f"[system context]\n",
+                f"{self.system_context}",
+                f"[user prompt]\n",
+                f"{self.user_prompt}",
+                f"[args]\n",
+                f"{system_context_args}, {user_prompt_args}",
+            ]))
 
         # Generate
         # print("[Exec] Querying AI Model...")
@@ -73,48 +69,3 @@ Failed to build prompt : {repr(e)}\n
             system_context, user_prompt, StrategyResponse)
 
         return response_obj
-        # Save Artifacts
-        # print(
-        #     f"[Save] Processing {len(response_obj.strategies)} generated strategies...")
-        # self._save_artifacts(response_obj.strategies, {
-        #     "source_files": {
-        #         "idea": idea_file,
-        #         "spec": spec_file,
-        #         "docs": doc_files,
-        #         "funcs": func_files
-        #     },
-        #     "prompts": {
-        #         "system": system_context,
-        #         "user": user_prompt
-        #     }
-        # })
-
-#     def _save_artifacts(self, strategies: List[StrategyImplementation], metadata_context: Dict):
-#         for strat in strategies:
-#             # Generate Hash from the Code
-#             code_hash = compute_hash(strat.code)
-
-#             # File Paths
-#             bf_path = self.output_dir / f"{code_hash}.bf"
-#             json_path = self.output_dir / f"{code_hash}.json"
-
-#             # 1. Write Code File (.bf)
-#             # Only write if it doesn't exist to prevent overwrites (or remove check to overwrite)
-#             if not bf_path.exists():
-#                 bf_path.write_text(strat.code, encoding='utf-8')
-
-#             # 2. Write Metadata File (.json)
-#             metadata = {
-#                 "hash": code_hash,
-#                 "name": strat.name,
-#                 "description": strat.description,
-#                 "generated_at": str(Path().resolve()),  # or timestamp
-#                 "inputs": metadata_context["source_files"],
-#                 # We optionally include prompts here for reproducibility
-#                 # "prompts": metadata_context["prompts"]
-#             }
-
-#             with open(json_path, 'w', encoding='utf-8') as f:
-#                 json.dump(metadata, f, indent=2)
-
-#         print(f"[Done] Artifacts saved to {self.output_dir}")

@@ -32,7 +32,8 @@ class ChromaClient:
         self.collection.upsert(
             ids=[hash],
             embeddings=[embedding],
-            metadatas=[{k: v for k, v in metadata.items() if k != "serialized"}],
+            metadatas=[{k: v for k, v in metadata.items() if k !=
+                        "serialized"}],
             documents=[metadata["serialized"]]
         )
 
