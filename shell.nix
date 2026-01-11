@@ -23,7 +23,7 @@ let
           owner = "Thessal";
           repo = "butterflow";
           rev = "main";
-          sha256 = "sha256-meXlB4baqOq1aF3QqktyHxP1/U0fTscnYhQHxa1wkiA="; 
+          sha256 = "sha256-TG0AIdsnwBrh6UsmWJfJDqkdvvEbAjXqARfzHKhoRQA="; 
         };
 
         nativeBuildInputs = [ self.hatchling ];
