@@ -6,8 +6,8 @@ class Backtester:
         self.close_p = close_p
         self.open_p = open_p
 
-        self.ret_overnight = (self.open[2:] / self.close[1:-1]) 
-        self.ret_intraday = (self.close[2:] / self.open[2:]) 
+        self.ret_overnight = (self.open_p[2:] / self.close_p[1:-1]) 
+        self.ret_intraday = (self.close_p[2:] / self.open_p[2:]) 
           
     def run(self, position):
         assert position.shape == self.close_p.shape

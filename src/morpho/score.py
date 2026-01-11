@@ -106,20 +106,11 @@ class SyntaxTeacher(Teacher):
 
 
 class SemanticTeacher(Teacher):
-    # TODO
-    def __init__(self, propritary=False):
+    def __init__(self, datadir="./data", propritary=False):
         # Initialize runtime
-        runtime_data = {
-            f'data("{x}")': np.load(f"data/{x}.npy")
-            for x in ["open", "high", "low", "close", "volume"]}
-        x_open = runtime_data['data("open")']
-        x_close = runtime_data['data("close")']
-        x_close_d1 = np.roll(runtime_data['data("close")'], shift=1, axis=0)
-        x_close_d1[0] = x_close[0]
-        x_logret = np.log(x_close / x_close_d1)
-        runtime_data['data("price")'] = x_close
-        runtime_data['data("returns")'] = x_logret  # logret
-        self.runtime = Runtime(data=runtime_data)
+        self.runtime = Runtime(datadir=datadir)
+        x_open = self.runtime.cache['data("open")']
+        x_close = self.runtime.cache['data("close")']
         self.backtester = Backtester(x_close, x_open)
         self.data_shape = x_close.shape
         self.factors = dict()
@@ -131,15 +122,13 @@ class SemanticTeacher(Teacher):
             for f_name, f_fn in self.prop["factors"].items():
                 self.factors[f_name] = f_fn(x_close)
 
-        raise NotImplementedError
-
     def score(self, graph: Node) -> Tuple[Any, Dict, str]:
         pos, scr, msg = self.position(graph)
         pos, scr, msg = self.normalize(pos, scr, msg)
         pos, scr, msg = self.position_stats(pos, scr, msg)
         pnl, scr, msg = self.pnl(pos, scr, msg)
         pnl, scr, msg = self.pnl_stats(pnl, scr, msg)
-        return pnl, scr, msg
+        return pnl, scr, "\n".join(msg)
 
     def position(self, graph, scores=dict(), error_msg=[]):
         # calculate position
@@ -152,7 +141,7 @@ class SemanticTeacher(Teacher):
             ("Resulting type is not ndarray", 1.,
              lambda pos: type(pos) != np.ndarray),
             ("Resulting size mismatch", 1., lambda pos: pos.shape != self.data_shape),
-            ("Too many empty position", 1., lambda pos: np.nanmin(
+            ("Too many empty position", 1., lambda pos: np.min(
                 np.nansum(np.isfinite(pos), axis=1)) < 3),
         ]
         position, scores, error_msg = self.test(
@@ -190,31 +179,41 @@ class SemanticTeacher(Teacher):
         if self.propritary:
             pos, scores, error_msg = self.prop["normalize"](
                 pos, position, scores, error_msg)
-        raise NotImplemented
+        return pos, scores, error_msg
 
     def position_stats(self, position, scores: Dict, error_msg: List):
-        scores["concentration"] = np.nanmax(np.abs(position))
+        if type(position) != type(None):
+            scores["position_concentration"] = float(np.nanmax(np.abs(position)))
+        else:
+            scores["position_concentration"] = None
         if self.propritary:
             scores = self.prop["position_stats"](position)
         return position, scores, error_msg
 
     def pnl(self, position, scores: Dict, error_msg: List):
-
         prefix = "pnl"
         processor = self.backtester.run
         rules = []
-        pnl, scores, error_msg = self.test(
+        ret_tvr, scores, error_msg = self.test(
             position, scores=scores, error_msg=error_msg, prefix=prefix, processor=processor, rules=rules)
         if self.propritary:
-            pnl, scores, error_msg = self.prop["position_stats"](
-                position, pnl, scores, error_msg)
-        return pnl, scores, error_msg
+            ret_tvr, scores, error_msg = self.prop["position_stats"](
+                position, ret_tvr, scores, error_msg)
+        return ret_tvr, scores, error_msg
 
-    def pnl_stats(self, pnl, scores: Dict, error_msg: List):
-        returns, turnover = pnl
-        scores["mdd"] = np.min(
-            np.cummax(np.cumsum(returns)) - np.cumsum(returns)),
-        scores["ret"] = np.nanmean(returns),
-        scores["tvr"] = np.nanmean(turnover),
-        scores["max_tvr"] = np.nanmax(turnover)
-        return pnl, scores, error_msg
+    def pnl_stats(self, ret_tvr, scores: Dict, error_msg: List):
+        if ret_tvr:
+            returns, turnover = ret_tvr
+            scores["mdd"] = float(np.max(
+                np.maximum.accumulate(np.cumsum(returns)) - np.cumsum(returns)))
+            scores["ret"] = float(np.nanmean(returns))
+            scores["std"] = float(np.nanstd(returns))
+            scores["tvr"] = float(np.nanmean(turnover))
+            scores["max_tvr"] = float(np.nanmax(turnover))
+        else:
+            scores["mdd"] = None
+            scores["ret"] = None
+            scores["std"] = None
+            scores["tvr"] = None
+            scores["max_tvr"] = None
+        return ret_tvr, scores, error_msg
