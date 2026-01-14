@@ -26,8 +26,10 @@ class Transpiler:
     def __init__(self, config: Dict, prompt_path: str):
         # Load template
         self.template_config = load_json(prompt_path)
-        self.system_context = self.template_config["system_context"]
-        self.user_prompt = self.template_config["user_prompt"]
+        self.system_context:str = self.template_config["system_context"]
+        self.user_prompt:str = self.template_config["user_prompt"]
+        assert type(self.system_context) == str
+        assert type(self.user_prompt) == str
 
         # Initialize Generator
         self.generator_config = config

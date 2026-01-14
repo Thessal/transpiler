@@ -30,7 +30,7 @@ class OllamaAdapter(GeneratorAdapter):
             model=self.model,
             messages=messages,
             format=schema.model_json_schema(),
-            options={'temperature': 0.7, 'num_ctx': 8192}
+            #options={'temperature': 0.7, 'num_ctx': 8192}
         )
         try:
             parsed_response = schema.model_validate_json(

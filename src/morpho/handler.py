@@ -94,8 +94,8 @@ class SummaryHandler(BaseHandler):
         self.constraints |= {
             "data_type": ["summary"],
             "path": re.compile(r"^([\w\-\.\/\\\ ]+)\.(txt)$"),
-            "prompt_path": re.compile(r"^([\w\-\.\/\\\ ]+)\.(txt)$"),
-            "original_path": re.compile(r"^([\w\-\.\/\\\ ]+)\.(json)$"),
+            "prompt_path": re.compile(r"^([\w\-\.\/\\\ ]+)\.(txt|json)$"),
+            "original_path": re.compile(r"^([\w\-\.\/\\\ ]+)\.(txt|json)$"),
         }
 
     def serialize(self, metadata: Dict):
