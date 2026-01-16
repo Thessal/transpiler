@@ -70,3 +70,17 @@ class LibraryIndexer:
             print("[indexer.py] DB empty")
         embedding = self.embedder.embed_document(metadata=metadata)
         return self.db_client.query(embedding=embedding, n_results=n_results)
+
+    def hash_to_embedding(self, hash: str) -> List:
+        result = self.db_client.collection.get(
+            ids=[hash], include=["embeddings"])
+        if len(["ids"]) == 0 or len(["ids"]) > 1:
+            print("hash matches none or multiple documents in DB")
+            return None
+        else:
+            assert result["embeddings"].shape[0] == 1
+            return result["embeddings"][0].tolist()
+
+    def get_by_hash(self, hash: str) -> Dict:
+        # Given hash, get document
+        return self.library[hash]

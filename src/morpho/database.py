@@ -45,6 +45,15 @@ class ChromaClient:
         )
         return results
 
+    def get_all(self):
+        all_items = self.collection.get()
+        ids = all_items["ids"]
+        embeddings = all_items["embeddings"]
+        results = []
+        for id_, emb in zip(ids, embeddings):
+            results.append({"id": id_, "emb": emb})
+        return results
+
     def get_total_count(self) -> int:
         """
         Returns the total number of documents/segments indexed in the collection.

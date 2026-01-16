@@ -16,21 +16,29 @@ class BaseHandler:
     def validate(self, metadata: Dict):
         for field in self.required_fields:
             if not (field in metadata):
-                raise ValueError(f"Missing field {field} in (unknown json) for {metadata['path']}")
+                raise ValueError(
+                    f"Missing field {field} in (unknown json) for {metadata['path']}")
         for field, value in metadata.items():
             if not (
-                (field in self.required_fields) 
+                (field in self.required_fields)
                 or (field in self.optional_fields)
-                ):
-                raise ValueError(f"Unknown field {field} in (unknown json) for in {metadata['path']}")
+            ):
+                raise ValueError(
+                    f"Unknown field {field} in (unknown json) for in {metadata['path']}")
             if field in self.constraints:
                 target = self.constraints[field]
                 if isinstance(target, list):
                     if not (value in target):
-                        raise ValueError(f"Unknown option {field}={value} in (unknown json) for {metadata['path']}")
+                        raise ValueError(
+                            f"Unknown option {field}={value} in (unknown json) for {metadata['path']}")
                 else:
                     if not bool(target.match(value)):
-                        raise ValueError(f"Unknown value {field}={value} in (unknown json) for {metadata['path']}")
+                        raise ValueError(
+                            f"Unknown value {field}={value} in (unknown json) for {metadata['path']}")
+            if type(value) in [list, dict]:
+                metadata[field] = str(value)
+                print(
+                    f"[FIXME] Option {field}={value} of list or dict in (unknown json) for {metadata['path']}, where list or dict is not allowed.")
 
     def serialize(self, metadata: Dict) -> Dict:
         self.validate(metadata)

@@ -48,6 +48,8 @@ class Teacher:
 
 
 class SyntaxTeacher(Teacher):
+    def __init__(self, silent=False):
+        self.silent = silent
 
     def score(self, input_code: str) -> Tuple[Any, Dict, str]:
         scores = dict()
@@ -78,7 +80,7 @@ class SyntaxTeacher(Teacher):
 
     def typechecking(self, ast, scores: Dict, error_msg: List):
         prefix = "type_check"
-        checker = TypeChecker()
+        checker = TypeChecker(silent=self.silent)
 
         def processor(ast):
             checker.check(ast)
@@ -91,7 +93,7 @@ class SyntaxTeacher(Teacher):
     def build(self, ast, scores: Dict, error_msg: List):
         # Build Graph
         prefix = "build"
-        builder = Builder()
+        builder = Builder(silent=True)
         processor = builder.build
         rules = [
             ("root node of computation graph is not a Node",
@@ -183,7 +185,8 @@ class SemanticTeacher(Teacher):
 
     def position_stats(self, position, scores: Dict, error_msg: List):
         if type(position) != type(None):
-            scores["position_concentration"] = float(np.nanmax(np.abs(position)))
+            scores["position_concentration"] = float(
+                np.nanmax(np.abs(position)))
         else:
             scores["position_concentration"] = None
         if self.propritary:

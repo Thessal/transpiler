@@ -30,7 +30,7 @@ class OllamaAdapter(GeneratorAdapter):
             model=self.model,
             messages=messages,
             format=schema.model_json_schema(),
-            #options={'temperature': 0.7, 'num_ctx': 8192}
+            # options={'temperature': 0.7, 'num_ctx': 8192}
         )
         try:
             parsed_response = schema.model_validate_json(
@@ -144,14 +144,21 @@ class OllamaEmbeddingAdapter(EmbedderAdaptor):
         self.model = model
 
     def embed_document(self, metadata: Dict) -> List[float]:
-
         # Generate embedding via Ollama
+        document = metadata["serialized"]
+        if not document:
+            document += " "
+
         response = self.client.embed(
             model=self.model,
-            input=metadata["serialized"]
+            input=document
         )
-        embedding: List[float] = response['embeddings'][0]
-
+        emb = response['embeddings']
+        if emb:
+            embedding: List[float] = response['embeddings'][0]
+        else:
+            raise ValueError(
+                f"The api returned no embedding for the following document:\n{document}")
         return embedding
 
 
