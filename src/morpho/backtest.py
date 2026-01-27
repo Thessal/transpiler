@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-
+## Deprecated. Move backetester and RL to rhetenor
 class Backtester:
     def __init__(self, close_p, open_p, adj_close_p=None, adj_open_p=None, split=None):
         self.close_p = close_p
